@@ -1,0 +1,143 @@
+# web服务器配置
+server:
+  admin:
+    address: ":8801"
+    serverRoot: "resource/public"
+    dumpRouterMap: false
+    routeOverWrite: true
+    openapiPath: "/api.json"
+    swaggerPath: "/swagger"
+    NameToUriType: 3
+    maxHeaderBytes: "20KB"
+    clientMaxBodySize: "200MB"
+    # Logging配置
+    logPath: "resource/log/server"                 # 日志文件存储目录路径，建议使用绝对路径。默认为空，表示关闭
+    logStdout: true               # 日志是否输出到终端。默认为true
+    errorStack: true               # 当Server捕获到异常时是否记录堆栈信息到日志中。默认为true
+    errorLogEnabled: true               # 是否记录异常日志信息到日志中。默认为true
+    errorLogPattern: "error-{Ymd}.log"  # 异常错误日志文件格式。默认为"error-{Ymd}.log"
+    accessLogEnabled: true              # 是否记录访问日志。默认为false
+    accessLogPattern: "access-{Ymd}.log" # 访问日志文件格式。默认为"access-{Ymd}.log"
+  wechatApp:
+    address: ":8802"
+    serverRoot: "resource/public"
+    dumpRouterMap: false
+    routeOverWrite: true
+    openapiPath: "/api.json"
+    swaggerPath: "/swagger"
+    NameToUriType: 3
+    maxHeaderBytes: "20KB"
+    clientMaxBodySize: "50MB"
+    # Logging配置
+    logPath: "resource/log/server"                 # 日志文件存储目录路径，建议使用绝对路径。默认为空，表示关闭
+    logStdout: true               # 日志是否输出到终端。默认为true
+    errorStack: true               # 当Server捕获到异常时是否记录堆栈信息到日志中。默认为true
+    errorLogEnabled: true               # 是否记录异常日志信息到日志中。默认为true
+    errorLogPattern: "error-{Ymd}.log"  # 异常错误日志文件格式。默认为"error-{Ymd}.log"
+    accessLogEnabled: true              # 是否记录访问日志。默认为false
+    accessLogPattern: "access-{Ymd}.log" # 访问日志文件格式。默认为"access-{Ymd}.log"
+
+logger:
+  path: "resource/log/run"
+  file: "{Y-m-d}.log"
+  level: "all"
+  stdout: true
+
+# 数据库连接Database.
+database:
+  logger:
+    level: "all"
+    stdout: true
+    Path: "resource/log/sql"
+
+  default:
+    link: "mysql:root:5149330@tcp(127.0.0.1:3360)/uu_gfast_db?charset=utf8mb4&parseTime=true&loc=Local"
+    debug: true
+    charset: "utf8mb4" #数据库编码
+    dryRun: false #空跑
+    maxIdle: 10 #连接池最大闲置的连接数
+    maxOpen: 10 #连接池最大打开的连接数
+    maxLifetime: 30 #(单位秒)连接对象可重复使用的时间长度
+# gToken配置
+gfToken:
+  cacheKey: "gfToken:"
+  timeOut: 10800
+  maxRefresh: 5400
+  multiLogin: true
+  encryptKey: "49c54195e750b04e74a8429b17896586"
+  cacheModel: "redis"
+  excludePaths:
+    - "/api/v1/system/login"
+
+# 微信小程序token配置
+wechatToken:
+  cacheKey: "uu-gfast:wxToken:"
+  timeOut: 604800
+  maxRefresh: 302400
+  multiLogin: false
+  encryptKey: "855a3b1b5f04a16bb093201a1e8c4910"
+  cacheModel: "redis"  # memory redis
+
+# Redis 配置示例
+redis:
+  # 单实例配置
+  default:
+    address: 127.0.0.1:6379
+    password: ""
+    db: 0
+    idleTimeout: 600
+    maxActive: 100
+# 后台相关配置
+system:
+  notCheckAuthAdminIds: [ 1 ]  #无需验证后台权限的用户id
+  dataDir: "./resource/data"
+  cache:
+    model: "redis"  #缓存模式 memory OR redis
+    prefix: "uu-gfast:" #缓存前缀
+
+#casbin配置
+casbin:
+  modelFile: "./resource/casbin/rbac_model.conf"
+  policyFile: "./resource/casbin/rbac_policy.csv"
+
+
+# CLI.
+gfcli:
+  gen:
+    dao:
+      - link: "mysql:root:5149330@tcp(127.0.0.1:3360)/uu_gfast_db"
+        tables: "tools_gen_table,tools_gen_table_column"
+        removePrefix: "base_"
+        descriptionTag: true
+        noModelComment: true
+        path: "./internal/app/gen"
+        doPath: "dao/do"
+
+# 生成代码设置
+gen:
+  author: "liangqing"
+  moduleName: "base"
+  packageName: "base"
+  autoRemovePre: true   #是否自动删除表前缀
+  tablePrefix: "table_,base_"   #表前缀
+  templatePath: "./resource/template/vm"  #代码生成模板路径
+  backDirForWindows: "F:/Desktop/smart_home_test/projects/gen" #windows后端路径
+  frontDirForWindows: "F:/Desktop/smart_home_test/projects/gen" #windows前端路径
+  backDirForMac: "/Users/liangqing/Desktop/slowcom" #mac 后端路径
+  frontDirForMac: "/Users/liangqing/Desktop/slowcom" #mac 前端路径
+
+# 上传配置
+upload:
+  domain: "http://localhost:8201" #上传图片的域名，目前仅用于本地上传
+  default: 3   # 默认0:上传至本地 1:腾讯云  2：阿里云 3：七牛云
+  tencentCOS:
+    upPath: "/smart_community/"
+    rawUrl: "https://slowcoom.myqcloud.com"
+    secretID: ""
+    secretKey: ""
+  qiniu:
+    rawUrl: "http://smart.qiniu.slowcom.cn"
+    accessKey: "m4HSivqb0vE3h0hhvHbCfIexFfaFXE2AEPwncEpr"
+    secretKey: "cyUCgPJqsQKWmWU6RaoN3Y05fA4ebOEHiUyIJ6cQ"
+    bucket: "slowcom-smart-community"
+

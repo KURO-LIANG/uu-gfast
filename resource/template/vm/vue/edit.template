@@ -1,0 +1,229 @@
+<template>
+{{$lens := .table.Columns|len}}
+{{$businessName := .table.BusinessName | CaseCamelLower}}
+	<div class="system-edit-post-container">
+		<el-dialog v-model="isShowDialog" width="60%" :close-on-click-modal="false" :title="dialogTitle">
+			<el-form ref="formRef" :model="formData" :rules="rules" size="default" label-width="120px">
+                 {{range $index, $column := .table.Columns}}
+                      {{if and (eq $column.IsInsert "1") (ne $column.IsPk "1")}}
+                      {{if eq $column.HtmlType "input"}}
+                      <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                           <el-input v-model="formData.{{$column.HtmlField}}" placeholder="请输入{{$column.ColumnComment}}" />
+                      </el-form-item>
+                      {{else if eq $column.HtmlType "select" }}
+                      {{if ne $column.LinkTableName ""}}
+                      <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                          <el-select v-model="formData.{{$column.HtmlField}}" placeholder="请选择{{$column.ColumnComment}}">
+                              <el-option
+                                  v-for="item in {{$column.HtmlField}}Options"
+                                  :key="item.key"
+                                  :label="item.value"
+                                  :value="item.key"
+                              ></el-option>
+                          </el-select>
+                      </el-form-item>
+                      {{else if ne $column.DictType ""}}
+                      <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                          <el-select v-model="formData.{{$column.HtmlField}}" placeholder="请选择{{$column.ColumnComment}}">
+                              <el-option
+                                  v-for="dict in {{$column.HtmlField}}Options"
+                                  :key="dict.key"
+                                  :label="dict.value"
+                                  {{if eq $column.GoType "Integer"}}
+                                  :value="parseInt(dict.key)"
+                                  {{else}}
+                                      :value="dict.key"
+                                  {{end}}
+                              ></el-option>
+                          </el-select>
+                      </el-form-item>
+                      {{else}}
+                      <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                          <el-select v-model="formData.{{$column.HtmlField}}" placeholder="请选择{{$column.ColumnComment}}">
+                              <el-option label="请选择字典生成" value="" />
+                          </el-select>
+                      </el-form-item>
+                      {{end}}
+                      {{else if eq $column.HtmlType "radio" }}
+                      {{if ne $column.DictType ""}}
+                       <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                           <el-radio-group v-model="formData.{{$column.HtmlField}}">
+                               <el-radio
+                                v-for="dict in {{$column.HtmlField}}Options"
+                                :key="dict.key"
+                                :label="dict.key"
+                               >{{ VueTag "{{" }}dict.value {{VueTag "}}"}}</el-radio>
+                           </el-radio-group>
+                       </el-form-item>
+                       {{else}}
+                       <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                           <el-radio-group v-model="formData.{{$column.HtmlField}}">
+                               <el-radio label="1">请选择字典生成</el-radio>
+                           </el-radio-group>
+                       </el-form-item>
+                       {{end}}
+                       {{else if eq $column.HtmlType "datetime"}}
+                       <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                           <el-date-picker clearable size="small" style="width: 200px"
+                               v-model="formData.{{$column.HtmlField}}"
+                               type="date"
+                               value-format="yyyy-MM-dd"
+                               placeholder="选择{{$column.ColumnComment}}">
+                           </el-date-picker>
+                       </el-form-item>
+                       {{else if eq $column.HtmlType "textarea"}}
+                       <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                           <el-input v-model="formData.{{$column.HtmlField}}" type="textarea" placeholder="请输入{{$column.ColumnComment}}" />
+                       </el-form-item>
+                       {{else if eq $column.HtmlType "checkbox" }}
+                        <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                           <el-checkbox-group v-model="form.{{$column.HtmlField}}">
+                              <el-checkbox
+                                v-for="dict in {{$column.HtmlField}}Options"
+                                :key="dict.key"
+                                :label="dict.key"
+                              >{{ VueTag "{{" }}dict.value {{VueTag "}}"}}</el-checkbox>
+                           </el-checkbox-group>
+                        </el-form-item>
+                       {{else if eq $column.HtmlType "richtext"}}
+                        <el-form-item label="{{$column.ColumnComment}}">
+                          <Editor ref="cke" v-model="formData.{{$column.HtmlField}}" @setEditContent="set{{$column.GoField}}EditContent"/>
+                        </el-form-item>
+                       {{end}}
+                       {{end}}
+                       {{end}}
+			</el-form>
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="onCancel" size="default">取 消</el-button>
+					<el-button type="primary" @click="onSubmit" size="default" :loading="loading">确 定</el-button>
+				</span>
+			</template>
+		</el-dialog>
+	</div>
+</template>
+
+<script lang="ts">
+import {reactive, toRefs, defineComponent, ref, unref, computed,nextTick} from 'vue';
+import {add{{.table.ClassName}},edit{{.table.ClassName}}} from "/@/api/{{.table.ModuleName}}/{{$businessName}}";
+import {ElMessage, FormInstance} from "element-plus";
+
+
+interface DialogRow {
+   {{range $index, $column := .table.Columns}}
+           {{if and (ne $column.ColumnName "created_by") (ne $column.ColumnName "updated_by") (ne $column.ColumnName "created_at") (ne $column.ColumnName "updated_at") (ne $column.ColumnName "deleted_at")}}
+               {{if or (eq $column.IsPk "1") (eq $column.GoType "int64") (eq $column.GoType "int")}}
+               {{$column.HtmlField}}:number ;
+               {{else}}
+               {{$column.HtmlField}}: string;
+               {{end}}
+           {{end}}
+    {{end}}
+}
+
+interface {{.table.ClassName}}State {
+    loading:boolean;
+	isShowDialog: boolean;
+	formData: DialogRow;
+    rules: Object;
+}
+
+export default defineComponent({
+	name: 'Edit{{.table.ClassName}}',
+	setup(props,ctx) {
+        const dragClasses = ['.system-edit-post-container .el-dialog', '.system-edit-post-container .el-dialog__header'];
+        const formRef = ref<FormInstance | null>(null);
+        const initForm = function ():DialogRow{
+          return {
+            {{range $index, $column := .table.Columns}}
+                {{if and (ne $column.ColumnName "created_by") (ne $column.ColumnName "updated_by") (ne $column.ColumnName "created_at") (ne $column.ColumnName "updated_at") (ne $column.ColumnName "deleted_at")}}
+                    {{if or (eq $column.GoType "int64") (eq $column.GoType "int")}}
+                        {{$column.HtmlField}}: 0,
+                     {{else}}
+                        {{$column.HtmlField}}: '',
+                     {{end}}
+                {{end}}
+             {{end}}
+          }
+        }
+		const state = reactive<{{.table.ClassName}}State>({
+          loading:false,
+          isShowDialog: false,
+          formData:initForm(),
+          // 表单校验
+          rules: {
+            {{range $index, $column := .table.Columns}}{{if eq $column.IsRequired "1"}}
+                    {{$column.HtmlField}} : [
+                      { required: true, message: "{{$column.ColumnComment}}不能为空", trigger: "blur" }
+                    ]{{if ne $lens $index}},{{end}}{{end}}{{end}}
+          }
+		});
+		// 打开弹窗
+		const openDialog = (row?: DialogRow) => {
+		    state.isShowDialog = true;
+            nextTick(() => {
+              formRef.value?.resetFields();
+              state.formData = initForm();
+              if(row) {
+                 // 深拷贝，修改时不修改表格的行
+                 state.formData = JSON.parse(JSON.stringify(row));
+              }
+            })
+		};
+		// 关闭弹窗
+		const closeDialog = () => {
+			state.isShowDialog = false;
+		};
+		// 取消
+		const onCancel = () => {
+			closeDialog();
+		};
+		// 新增
+		const onSubmit = () => {
+      const formWrap = unref(formRef) as any;
+      if (!formWrap) return;
+      formWrap.validate((valid: boolean) => {
+        if (valid) {
+          state.loading = true;
+          if(state.formData.id===0){
+            //添加
+            add{{.table.ClassName}}(state.formData).then(()=>{
+              ElMessage.success('添加成功');
+              closeDialog(); // 关闭弹窗
+              ctx.emit('getList')
+            }).finally(()=>{
+              state.loading = false;
+            })
+          }else{
+            //修改
+            edit{{.table.ClassName}}(state.formData).then(()=>{
+              ElMessage.success('修改成功');
+              closeDialog(); // 关闭弹窗
+              ctx.emit('getList')
+            }).finally(()=>{
+              state.loading = false;
+            })
+          }
+        }
+      });
+		};
+    const dialogTitle = computed(() => {
+      return (state.formData.id===0?'添加':'修改')
+    });
+    return {
+      dragClasses,
+      dialogTitle,
+      openDialog,
+      closeDialog,
+      onCancel,
+      onSubmit,
+      formRef,
+      ...toRefs(state),
+    };
+	},
+});
+</script>
+
+<style scoped lang="scss">
+
+</style>

@@ -1,0 +1,102 @@
+// ==========================================================================
+// 日期：{{.table.CreateTime}}
+// 生成人：{{.table.FunctionAuthor}}
+// 功能：{{.table.TableComment}} controller
+// ==========================================================================
+////
+{{$structName := .table.BusinessName | CaseCamelLower}}
+{{$BsName := .table.BusinessName | CaseCamel}}
+package controller
+
+{{$hasGStr:=false}}
+{{$gjsonTag:=false}}
+{{$libTag:=false}}
+{{range $index,$column:=.table.Columns}}
+{{if eq $column.HtmlType "checkbox"}}
+{{$hasGStr = true}}
+{{else if eq $column.HtmlType "images" "file" "files"}}
+{{$gjsonTag = true}}
+{{$libTag = true}}
+{{end}}
+{{end}}
+
+import (
+    "context"
+    "uu-gfast/api/v1/{{.table.PackageName}}"
+    "uu-gfast/api/v1/common"
+    "uu-gfast/internal/app/{{.table.PackageName}}/model/entity"
+    "uu-gfast/internal/app/{{.table.PackageName}}/service"
+)
+
+{{$C := "Controller"}}
+
+type {{$structName}}{{$C}} struct {
+
+}
+
+var {{.table.ClassName}} = new({{$structName}}{{$C}})
+
+// List 列表
+func (c *{{$structName}}{{$C}}) List(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}SearchReq) (res *{{.table.PackageName}}.{{$BsName}}SearchRes, err error)  {
+
+	res = new({{.table.PackageName}}.{{$BsName}}SearchRes)
+    res.Total, res.List, err = service.{{.table.ClassName}}().List(ctx, req)
+	return
+}
+
+// Add 添加
+func (c *{{$structName}}{{$C}}) Add(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}AddReq) (res *common.NoneRes, err error)  {
+    err = service.{{.table.ClassName}}().Add(ctx, &entity.{{.table.ClassName}}{
+            {{range $index, $column := .table.Columns}}
+                {{if and (ne $column.GoField "CreatedBy") (ne $column.GoField "Id")}}
+                  {{$column.GoField}}:  req.{{$column.GoField}},
+                {{end}}
+            {{end}}
+       })
+    return
+}
+
+
+// Get 获取
+func (c *{{$structName}}{{$C}}) Get(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}InfoReq) (res *{{.table.PackageName}}.{{$BsName}}InfoRes, err error)  {
+    res = new({{.table.PackageName}}.{{$BsName}}InfoRes)
+	res.{{.table.ClassName}}, err = service.{{.table.ClassName}}().GetInfoById(ctx, req.Id)
+    return
+}
+
+// Edit 修改
+func (c *{{$structName}}{{$C}}) Edit(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}EditReq) (res *common.NoneRes, err error) {
+    err = service.{{.table.ClassName}}().Edit(ctx, &entity.{{.table.ClassName}}{
+         {{range $index, $column := .table.Columns}}
+             {{if ne $column.GoField "CreatedBy"}}
+               {{$column.GoField}}:  req.{{$column.GoField}},
+             {{end}}
+         {{end}}
+    })
+   	return
+}
+
+
+// Delete 删除
+func (c *{{$structName}}{{$C}}) Delete(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}DeleteReq) (res *common.NoneRes, err error) {
+	err = service.{{.table.ClassName}}().DeleteByIds(ctx, req.Ids)
+    return
+}
+
+{{range $index,$column:= .table.Columns}}
+{{if and (HasSuffix $column.ColumnName "status") (eq $column.IsList "1") }}
+// Change{{$column.GoField}} 修改状态
+func (c *{{$structName}}) Change{{$column.GoField}}(r *ghttp.Request){
+	   var req *dao.{{$.table.ClassName}}{{$column.GoField}}Req
+	   //获取参数
+	   if err := r.Parse(&req); err != nil {
+	       c.FailJsonExit(r, err.(gvalid.Error).FirstString())
+	   }
+	   if err := service.{{$.table.ClassName}}.Change{{$column.GoField}}(r.GetCtx(),req); err != nil {
+	       c.FailJsonExit(r, err.Error())
+	   } else {
+	       c.SusJsonExit(r, "状态设置成功")
+	   }
+}
+{{end}}
+{{end}}

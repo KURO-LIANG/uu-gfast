@@ -1,0 +1,23 @@
+
+// 功能：{{.table.TableComment}} model
+package entity
+
+{{$hasGTime:=false}}
+{{range $index, $column := .table.Columns}}
+{{if eq $column.GoType "Time"}}
+{{$hasGTime = true}}
+{{end}}
+{{end}}
+
+{{if $hasGTime}}
+import (
+	"github.com/gogf/gf/v2/os/gtime"
+)
+{{end}}
+
+// {{.table.ClassName}} is the golang structure for table {{.table.TableName}}.
+type {{.table.ClassName}} struct {
+{{range $index, $column := .table.Columns}}
+ {{$column.GoField}} {{if eq $column.GoType "Time"}}*gtime.Time{{else}}{{$column.GoType}}{{end}}  `json:"{{$column.HtmlField}}" description:"{{$column.ColumnComment}}"`    // {{$column.ColumnComment}}
+{{end}}
+}

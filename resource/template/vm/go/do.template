@@ -1,0 +1,22 @@
+// 功能：{{.table.TableComment}} do
+package do
+{{$hasGTime:=false}}
+{{range $index, $column := .table.Columns}}
+{{if eq $column.GoType "Time"}}
+{{$hasGTime = true}}
+{{end}}
+{{end}}
+import (
+	"github.com/gogf/gf/v2/frame/g"
+	{{if $hasGTime}}
+	    "github.com/gogf/gf/v2/os/gtime"
+	{{end}}
+)
+
+// {{.table.ClassName}} is the golang structure of table {{.table.TableName}} for DAO operations like Where/Data.
+type {{.table.ClassName}} struct {
+	g.Meta            `orm:"table:{{.table.TableName}}, do:true"`
+	{{range $index, $column := .table.Columns}}
+    {{$column.GoField}} {{if eq $column.GoType "Time"}}*gtime.Time{{else}}interface{}{{end}}     // {{$column.ColumnComment}}
+    {{end}}
+}

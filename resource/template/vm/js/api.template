@@ -1,0 +1,58 @@
+import request from '/@/utils/request'
+
+{{$businessName := .table.BusinessName | CaseCamelLower}}
+{{$urlPrefix := "/api/v1"}}
+{{$plugin:=""}}
+{{if ContainsI $.table.PackageName "plugins"}}
+{{$plugin = "plugins/"}}
+{{end}}
+
+
+// 查询{{.table.FunctionName}}列表
+export function getList(query:Object) {
+  return request({
+    url: '{{$urlPrefix}}/{{.table.ModuleName}}/{{$businessName}}/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询{{.table.FunctionName}}详细
+export function get{{.table.ClassName}}({{.table.PkColumn.HtmlField}}:number) {
+  return request({
+    url: '{{$urlPrefix}}/{{.table.ModuleName}}/{{$businessName}}/info',
+    method: 'get',
+    params: {
+     id: {{.table.PkColumn.HtmlField}}
+    }
+  })
+}
+
+// 新增{{.table.FunctionName}}
+export function add{{.table.ClassName}}(data:Object) {
+  return request({
+    url: '{{$urlPrefix}}/{{.table.ModuleName}}/{{$businessName}}/add',
+    method: 'post',
+    data: data
+  })
+}
+
+// 修改{{.table.FunctionName}}
+export function edit{{.table.ClassName}}(data:Object) {
+  return request({
+    url: '{{$urlPrefix}}/{{.table.ModuleName}}/{{$businessName}}/edit',
+    method: 'put',
+    data: data
+  })
+}
+
+// 删除{{.table.FunctionName}}
+export function delete{{.table.ClassName}}(ids:number[]) {
+  return request({
+    url: '{{$urlPrefix}}/{{.table.ModuleName}}/{{$businessName}}/delete',
+    method: 'delete',
+    data:{
+       ids:ids
+    }
+  })
+}

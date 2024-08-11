@@ -1,0 +1,72 @@
+// ==========================================================================
+// 日期：{{.table.CreateTime}}
+// 生成人：{{.table.FunctionAuthor}}
+// 功能：{{.table.TableComment}} 接口
+// ==========================================================================
+////
+package {{.table.PackageName}}
+{{$structName := .table.BusinessName | CaseCamelLower}}
+{{$CaseName := .table.ClassName | CaseCamelLower}}
+{{$BsName := .table.BusinessName | CaseCamel}}
+
+import (
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
+	commonApi "uu-gfast/api/v1/common"
+	"uu-gfast/internal/app/{{.table.PackageName}}/model/entity"
+)
+
+// {{$BsName}}SearchReq 查询列表
+type {{$BsName}}SearchReq struct {
+	g.Meta     `path:"/{{$structName}}/list" tags:"{{.table.FunctionName}}管理" method:"get" summary:"查询列表"`
+	 {{range $index, $column := .table.Columns}}
+        {{if eq $column.IsQuery "1"}}
+            {{$column.GoField}}  {{if eq $column.GoType "Time"}}*gtime.Time{{else}}{{$column.GoType}}{{end}} `json:"{{$column.HtmlField}}"` //{{$column.ColumnComment}}
+        {{end}}
+     {{end}}
+	commonApi.PageReq
+}
+
+// {{$BsName}}SearchRes 查询列表返回
+type {{$BsName}}SearchRes struct {
+	g.Meta `mime:"application/json"`
+	List   []*entity.{{.table.ClassName}} `json:"list"`
+	commonApi.ListRes
+}
+
+// {{$BsName}}AddReq 新增
+type {{$BsName}}AddReq struct {
+	g.Meta   `path:"/{{$structName}}/add" tags:"{{.table.FunctionName}}管理" method:"post" summary:"新增"`
+    {{range $index, $column := .table.Columns}}
+        {{if ne $column.GoField "Id"}}
+            {{$column.GoField}}  {{if eq $column.GoType "Time"}}*gtime.Time{{else if or (eq $column.GoType "int") (eq $column.GoType "int64") (eq $column.GoType "uint") (eq $column.GoType "uint64")}}{{$column.GoType}}{{else}}{{$column.GoType}}{{end}} `json:"{{$column.HtmlField}}" v:"required#{{$column.ColumnComment}}不能为空"  dc:"{{$column.ColumnComment}}"` //{{$column.ColumnComment}}
+        {{end}}
+    {{end}}
+}
+
+
+// {{$BsName}}EditReq 修改
+type {{$BsName}}EditReq struct {
+	g.Meta   `path:"/{{$structName}}/edit" tags:"{{.table.FunctionName}}管理" method:"put" summary:"修改"`
+    {{range $index, $column := .table.Columns}}
+       {{$column.GoField}}  {{if eq $column.GoType "Time"}}*gtime.Time{{else if or (eq $column.GoType "int") (eq $column.GoType "int64") (eq $column.GoType "uint") (eq $column.GoType "uint64")}}{{$column.GoType}}{{else}}{{$column.GoType}}{{end}} `json:"{{$column.HtmlField}}" v:"required#{{$column.ColumnComment}}不能为空"  dc:"{{$column.ColumnComment}}"` //{{$column.ColumnComment}}
+    {{end}}
+}
+
+// {{$BsName}}InfoReq 获取信息请求
+type {{$BsName}}InfoReq struct {
+	g.Meta `path:"/{{$structName}}/info" tags:"{{.table.FunctionName}}管理" method:"get" summary:"获取信息"`
+	Id     uint64 `json:"id" v:"required#ID不能为空"`
+}
+
+// {{$BsName}}InfoRes 获取信息返回
+type {{$BsName}}InfoRes struct {
+	g.Meta `mime:"application/json"`
+	{{.table.ClassName}} *entity.{{.table.ClassName}} `json:"{{$CaseName}}"`
+}
+
+// {{$BsName}}DeleteReq 删除
+type {{$BsName}}DeleteReq struct {
+	g.Meta `path:"/{{$structName}}/delete" tags:"{{.table.FunctionName}}管理" method:"delete" summary:"删除"`
+	Ids    []uint64 `json:"ids" v:"required#未选择删除的ID" dc:"删除的ID"`
+}

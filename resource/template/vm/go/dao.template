@@ -1,0 +1,23 @@
+// 功能：{{.table.TableComment}} dao
+package dao
+import (
+	"uu-gfast/internal/app/{{.table.PackageName}}/dao/internal"
+)
+{{$structName := .table.ClassName | CaseCamelLower}}
+// internal{{.table.ClassName}}Dao is internal type for wrapping internal DAO implements.
+type internal{{.table.ClassName}}Dao = *internal.{{.table.ClassName}}Dao
+
+// {{$structName}}Dao is the data access object for table {{.table.TableName}}.
+// You can define custom methods on it to extend its functionality as you wish.
+type {{$structName}}Dao struct {
+	internal{{.table.ClassName}}Dao
+}
+
+var (
+	// {{.table.ClassName}} is globally public accessible object for table {{.table.TableName}} operations.
+	{{.table.ClassName}} = {{$structName}}Dao{
+		internal.New{{.table.ClassName}}Dao(),
+	}
+)
+
+// Fill with you ideas below.

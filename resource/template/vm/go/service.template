@@ -1,0 +1,184 @@
+// ==========================================================================
+// 日期：{{.table.CreateTime}}
+// 生成人：{{.table.FunctionAuthor}}
+// 功能：{{.table.TableComment}} service
+// ==========================================================================
+////
+{{$structName := .table.BusinessName | CaseCamelLower}}
+{{$BsName := .table.BusinessName | CaseCamel}}
+package service
+
+
+import (
+    "context"
+   	"github.com/gogf/gf/v2/errors/gerror"
+   	"github.com/gogf/gf/v2/frame/g"
+   	"uu-gfast/api/v1/{{.table.PackageName}}"
+   	"uu-gfast/internal/app/{{.table.PackageName}}/dao"
+   	"uu-gfast/internal/app/{{.table.PackageName}}/model/entity"
+   	"uu-gfast/library/liberr"
+)
+
+
+type I{{.table.ClassName}} interface {
+	List(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}SearchReq) (total int, list []*entity.{{.table.ClassName}}, err error)
+	Add(ctx context.Context, {{$structName}} *entity.{{.table.ClassName}}) (err error)
+	GetInfoById(ctx context.Context, Id uint64) ({{$structName}} *entity.{{.table.ClassName}}, err error)
+	Edit(ctx context.Context, {{$structName}} *entity.{{.table.ClassName}}) (err error)
+	DeleteByIds(ctx context.Context, ids []uint64) (err error)
+}
+
+type {{$structName}}Impl struct {
+}
+
+var (
+	{{$structName}}Service = {{$structName}}Impl{}
+)
+
+func {{.table.ClassName}}() I{{.table.ClassName}} {
+	return &{{$structName}}Service
+}
+
+{{$pk:=""}}
+{{$pkGoField:=""}}
+
+{{$createdAt:=""}}
+{{$createdAtGoField:=""}}
+
+{{range $index, $column := .table.Columns}}
+{{if eq $column.IsPk "1"}}
+    {{$pk = $column.ColumnName}}
+    {{$pkGoField = $column.GoField}}
+{{end}}
+{{if eq $column.ColumnName "created_at"}}
+    {{$createdAt = $column.ColumnName}}
+    {{$createdAtGoField = $column.GoField}}
+{{end}}
+{{end}}
+
+// List
+func (s *{{$structName}}Impl) List(ctx context.Context, req *{{.table.PackageName}}.{{$BsName}}SearchReq) (total int, list []*entity.{{$.table.ClassName}}, err error) {
+	err = g.Try(ctx, func(ctx context.Context) {
+	    m := dao.{{.table.ClassName}}.Ctx(ctx)
+        {{range $index, $column := .table.Columns}} {{if eq $column.IsQuery "1"}}
+           {{if eq $column.QueryType "LIKE"}}
+              if req.{{$column.GoField}} != "" {
+                   m = m.Where(dao.{{$.table.ClassName}}.Columns().{{$column.GoField}}+" like ?", "%"+req.{{$column.GoField}}+"%")
+               } {{end}}
+           {{if eq $column.QueryType "EQ"}} {{if eq $column.GoType "string"}}
+               if req.{{$column.GoField}} != "" {
+                   m = m.Where(dao.{{$.table.ClassName}}.Columns().{{$column.GoField}}+" = ?", req.{{$column.GoField}})
+               }
+           {{else if and (eq $column.GoType "Time") (eq $column.ColumnName "created_at")}}
+               if req.BeginTime != "" {
+                   m = m.Where(dao.{{$.table.ClassName}}.Columns().{{$column.GoField}}+" >=", req.BeginTime)
+               }
+               if req.EndTime != "" {
+                   m = m.Where(dao.{{$.table.ClassName}}.Columns().{{$column.GoField}}+" <", req.EndTime)
+               }
+           {{else if or (eq $column.GoType "int") (eq $column.GoType "int64") (eq $column.GoType "uint") (eq $column.GoType "uint64") }}
+               if req.{{$column.GoField}} != "" {
+                   m = m.Where(dao.{{$.table.ClassName}}.Columns().{{$column.GoField}}+" = ?", req.{{$column.GoField}})
+               }
+           {{end}} {{end}}
+           {{if and (eq $column.QueryType "BETWEEN") (eq $column.ColumnType "datetime") }}
+               if req.{{$column.GoField}} != nil {
+                   m = m.Where(dao.{{$.table.ClassName}}.Columns().{{$column.GoField}}+" >= ? AND "+dao.{{$.table.ClassName}}.Columns.{{$column.GoField}}+" < ?", req.{{$column.GoField}}, req.{{$column.GoField}}.Add(gtime.D))
+               }
+            {{end}}
+            {{end}}
+            {{end}}
+
+	    total, err = m.Count()
+    	liberr.ErrIsNil(ctx, err, "查询总数失败")
+        err = m.Fields(dao.{{$.table.ClassName}}.Columns()).Page(req.PageNum,req.PageSize).Scan(&list)
+        liberr.ErrIsNil(ctx, err, "查询数据失败")
+	})
+	return
+}
+
+
+// GetInfoById 通过id获取
+func (s *{{$structName}}Impl) GetInfoById(ctx context.Context,id uint64) ({{$structName}} *entity.{{.table.ClassName}}, err error) {
+	err = g.Try(ctx, func(ctx context.Context) {
+    	err = dao.{{.table.ClassName}}.Ctx(ctx).Where(dao.{{.table.ClassName}}.Columns().Id+" = ? ", id).Scan(&{{$structName}})
+    	liberr.ErrIsNil(ctx, err, "查询数据失败")
+    })
+	return
+}
+
+// Add 添加
+func (s *{{$structName}}Impl) Add(ctx context.Context,{{$structName}} *entity.{{.table.ClassName}}) (err error) {
+	err = g.Try(ctx, func(ctx context.Context) {
+    		_, err = dao.{{.table.ClassName}}.Ctx(ctx).Insert({{$structName}})
+    		liberr.ErrIsNil(ctx, err, "新增数据失败")
+    	})
+    return
+}
+
+// Edit 修改
+func (s *{{$structName}}Impl) Edit(ctx context.Context,{{$structName}} *entity.{{.table.ClassName}})  (err error) {
+    err = g.Try(ctx, func(ctx context.Context) {
+           d, e1 := s.GetInfoById(ctx, {{$structName}}.Id)
+           if e1 != nil {
+                liberr.ErrIsNil(ctx, e1, "修改信息失败")
+                return
+            }
+            if d == nil {
+                liberr.ErrIsNil(ctx, gerror.New("要修改的数据不存在"))
+                return
+           }
+    		_, err = dao.{{.table.ClassName}}.Ctx(ctx).WherePri({{$structName}}.Id).Update({{$structName}})
+    		liberr.ErrIsNil(ctx, err, "修改信息失败")
+    	})
+    	return
+}
+
+
+// DeleteByIds 删除
+func (s *{{$structName}}Impl) DeleteByIds(ctx context.Context,ids []uint64) (err error) {
+	if len(ids) == 0 {
+		err = gerror.New("参数错误")
+		return
+	}
+	err = g.Try(ctx, func(ctx context.Context) {
+        _, err = dao.{{$.table.ClassName}}.Ctx(ctx).Where(dao.{{$.table.ClassName}}.Columns().Id+" in (?)", ids).Delete()
+        liberr.ErrIsNil(ctx, err, "删除失败")
+    })
+    return
+}
+
+
+{{range $index,$column:= .table.Columns}}
+{{if and (HasSuffix $column.ColumnName "status") (eq $column.IsList "1") }}
+// Change{{$column.GoField}} 修改状态
+func (s *{{$structName}}) Change{{$column.GoField}}(ctx context.Context,req *dao.{{$.table.ClassName}}{{$column.GoField}}Req) error {
+	_, err := dao.{{$.table.ClassName}}.Ctx(ctx).WherePri(req.{{$pkGoField}}).Update(g.Map{
+		dao.{{$.table.ClassName}}.Columns.{{$column.GoField}}: req.{{$column.GoField}},
+	})
+	return err
+}
+{{end}}
+{{end}}
+
+{{if eq .table.TplCategory "tree"}}
+// GetChildrenIds 通过ID获取子级ID
+func (s *{{$structName}})GetChildrenIds(ctx context.Context,ids []int) ([]int, error) {
+	//获取所有
+	_,_,all, err := s.GetList(&dao.{{.table.ClassName}}SearchReq{PageReq:comModel.PageReq{Ctx: ctx}})
+	if err != nil {
+		return nil, err
+	}
+	list := make(g.List, len(all))
+	for k, info := range all {
+		list[k] = gconv.Map(info)
+	}
+	for _, id := range ids {
+		children := library.FindSonByParentId(list, id, "{{.table.TreeParentCode}}", "{{.table.TreeCode}}")
+		for _, cid := range children {
+			ids = append(ids, gconv.Int(cid["{{.table.TreeCode}}"]))
+		}
+	}
+	return ids, nil
+}
+{{end}}

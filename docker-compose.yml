@@ -1,0 +1,41 @@
+version: '2'
+services:
+  uu-gfast:
+    container_name: uu-gfast
+    image: registry.cn-shenzhen.aliyuncs.com/hanyou/uu-gfast:0.0.1
+    restart: unless-stopped
+    user: "root"
+    networks:
+      - default
+      - gatewayNet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      - GF_GCFG_FILE=config-prod.yaml
+    cpu_shares: 200  #限制CPU使用份额权重,默认1024
+    mem_limit: 600m  #内存限制600m
+    memswap_limit: 800m #内存+swap限制800M
+
+  uu-gfast-ui:
+    container_name: uu-gfast-ui
+    image: registry.cn-shenzhen.aliyuncs.com/hanyou/uu-gfast-ui:0.0.1
+    #restart: unless-stopped
+    #user: "root"
+    networks:
+      - default
+      - gatewayNet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    driver: bridge
+  gatewayNet:
+    external:
+      name: myNetwork

@@ -1,0 +1,283 @@
+<template>
+{{$lens := .table.Columns|len}}
+{{$businessName := .table.BusinessName | CaseCamelLower}}
+{{$editName := .table.BusinessName | CaseCamel}}
+	<div class="system-post-container">
+		<el-card shadow="hover">
+			<div class="system-user-search mb15">
+        <el-form :inline="true" :model="tableData.param"  ref="queryRef" label-width="68px">
+              {{range $index, $column := .table.Columns}}
+              {{if and (eq $column.IsQuery "1") (ne $column.ColumnName "created_by") (ne $column.ColumnName "updated_by") (ne $column.ColumnName "created_at") (ne $column.ColumnName "updated_at") (ne $column.ColumnName "deleted_at")}}
+              {{if eq $column.HtmlType "input" "textarea"}}
+                <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                  <el-input
+                      size="default"
+                      v-model="tableData.param.{{$column.HtmlField}}"
+                      placeholder="请输入{{$column.ColumnComment}}"
+                      clearable
+                  />
+                </el-form-item>
+                {{else if and (eq $column.HtmlType "select" "radio" "checkbox") (ne $column.DictType "") }}
+                <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                  <el-select v-model="tableData.param.{{$column.HtmlField}}" placeholder="请选择{{$column.ColumnComment}}" clearable size="small">
+                      <el-option
+                          v-for="dict in {{$column.HtmlField}}Options"
+                          :key="dict.key"
+                          :label="dict.value"
+                          :value="dict.key"
+                      />
+                  </el-select>
+                </el-form-item>
+                {{else if eq $column.HtmlType "datetime"}}
+                <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                  <el-date-picker
+                      clearable size="small" style="width: 200px"
+                      v-model="tableData.param.{{$column.HtmlField}}"
+                      type="date"
+                      value-format="yyyy-MM-dd"
+                      placeholder="选择{{$column.ColumnComment}}">
+                  </el-date-picker>
+                </el-form-item>
+                {{else if and (eq $column.HtmlType "select" "radio" "checkbox") (ne $column.LinkTableName "")}}
+                  <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                    <el-select v-model="tableData.param.{{$column.HtmlField}}" placeholder="请选择{{$column.ColumnComment}}" clearable size="small">
+                        <el-option
+                            v-for="item in {{$column.HtmlField}}Options"
+                            :key="item.key"
+                            :label="item.value"
+                            :value="item.key"
+                        />
+                    </el-select>
+                  </el-form-item>
+                  {{else}}
+                  <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.HtmlField}}">
+                    <el-select v-model="tableData.param.{{$column.HtmlField}}" placeholder="请选择{{$column.ColumnComment}}" clearable size="small">
+                        <el-option label="请选择字典生成" value="" />
+                    </el-select>
+                  </el-form-item>
+                {{end}}
+                {{end}}
+                {{end}}
+          <el-form-item>
+            <el-button size="default" type="success" class="ml10" @click="queryList">
+              <el-icon>
+                <ele-Search />
+              </el-icon>
+              查询
+            </el-button>
+            <el-button size="default" @click="resetQuery(queryRef)">
+              <el-icon>
+                <ele-Refresh />
+              </el-icon>
+              重置
+            </el-button>
+            <el-button size="default" type="primary" class="ml10" @click="handlerAdd" v-auth="'{{.table.ModuleName}}/{{.table.BusinessName | CaseCamelLower}}/add'">
+              <el-icon>
+                <ele-FolderAdd />
+              </el-icon>
+              新增
+            </el-button>
+            <el-button size="default" type="danger" class="ml10" @click="handlerDel(null)" v-auth="'{{.table.ModuleName}}/{{.table.BusinessName | CaseCamelLower}}/delete'">
+              <el-icon>
+                <ele-Delete />
+              </el-icon>
+              删除
+            </el-button>
+          </el-form-item>
+        </el-form>
+			</div>
+			<el-table :data="tableData.data" style="width: 100%" @selection-change="handleSelectionChange" v-loading="tableData.loading">
+                <el-table-column type="selection" width="55" align="center" />
+                  {{range $index, $column := .table.Columns}}
+                      {{if eq $column.IsPk "1"}}
+                      <el-table-column label="{{$column.ColumnComment}}" align="center" prop="{{$column.HtmlField}}" show-overflow-tooltip/>
+                      {{else if and (eq $column.IsList "1") (eq $column.HtmlType "datetime")}}
+                      <el-table-column label="{{$column.ColumnComment}}" align="center" prop="{{$column.HtmlField}}" width="180" show-overflow-tooltip/>
+                      {{else if and (eq $column.IsList "1") (HasSuffix $column.ColumnName "status")}}
+                      <el-table-column label="{{$column.ColumnComment}}" align="center" show-overflow-tooltip>
+                        <template slot-scope="scope">
+                            <el-switch
+                              v-model="scope.row.{{$column.HtmlField}}"
+                              :active-value="1"
+                              :inactive-value="0"
+                              @change="{{$column.HtmlField}}Change(scope.row)"
+                            ></el-switch>
+                        </template>
+                      </el-table-column>
+                      {{else if ne $column.LinkTableName ""}}
+                      <el-table-column label="{{$column.ColumnComment}}" align="center" prop="{{$column.HtmlField}}" :formatter="{{$column.HtmlField}}Format" width="100" show-overflow-tooltip>
+                        <template slot-scope="scope">
+                          {{VueTag "{{" }} {{$column.HtmlField}}Format(scope.row) {{VueTag "}}" }}
+                        </template>
+                      </el-table-column>
+                      {{else if and (eq $column.IsList "1") (ne $column.DictType "")}}
+                      <el-table-column label="{{$column.ColumnComment}}" align="center" prop="{{$column.HtmlField}}" :formatter="{{$column.HtmlField}}Format" show-overflow-tooltip/>
+                      {{else if and (eq $column.IsList "1") (ne $column.HtmlField "")}}
+                      <el-table-column label="{{$column.ColumnComment}}" align="center" prop="{{$column.HtmlField}}" show-overflow-tooltip/>
+                  {{end}}{{end}}
+				<el-table-column label="操作" width="100">
+					<template #default="scope">
+						<el-button size="small" type="primary" link @click="handlerEdit(scope.row)" v-auth="'{{.table.ModuleName}}/{{.table.BusinessName | CaseCamelLower}}/edit'">修改</el-button>
+						<el-button size="small" type="primary" link @click="handlerDel(scope.row)" v-auth="'{{.table.ModuleName}}/{{.table.BusinessName | CaseCamelLower}}/delete'">删除</el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+          <pagination
+              v-show="tableData.total>0"
+              :total="tableData.total"
+              v-model:page="tableData.param.pageNum"
+              v-model:limit="tableData.param.pageSize"
+              @pagination="queryList"
+          />
+		</el-card>
+		<Edit{{$editName}} ref="editRef" @getList="queryList"/>
+	</div>
+</template>
+
+<script lang="ts">
+import {toRefs, reactive, onMounted, ref, defineComponent, toRaw} from 'vue';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import {getList,delete{{.table.ClassName}}} from "/@/api/{{.table.ModuleName}}/{{$businessName}}";
+import Edit{{$editName}} from "/@/views/{{.table.ModuleName}}/{{$businessName}}/component/edit{{$editName}}.vue";
+import {FormInstance} from "element-plus/es";
+// 定义接口来定义对象的类型
+interface TableData {
+    {{range $index, $column := .table.Columns}}
+         {{if or (eq $column.IsPk "1") (eq $column.GoType "int64") (eq $column.GoType "int")}}
+         {{$column.HtmlField}}:number ;
+         {{else}}
+         {{$column.HtmlField}}: string;
+         {{end}}
+  {{end}}
+}
+interface TableDataState {
+    ids:number[];
+	tableData: {
+		data: Array<TableData>;
+		total: number;
+		loading: boolean;
+		param: {
+          {{range $index, $column := .table.Columns}}{{if eq $column.IsQuery "1"}}
+                   {{if or (eq $column.GoType "int64") (eq $column.GoType "int")}}
+                   {{$column.HtmlField}}: number;
+                   {{else}}
+                   {{$column.HtmlField}}: string;{{end}}
+                  {{end}}{{end}}
+
+          pageNum: number;
+          pageSize: number;
+		};
+	};
+}
+
+export default defineComponent({
+	name: '{{.table.ClassName}}List',
+	components: {Edit{{$editName}}},
+	setup() {
+		const editRef = ref();
+    const queryRef = ref();
+		const state = reactive<TableDataState>({
+      ids:[],
+			tableData: {
+				data: [],
+				total: 0,
+				loading: false,
+				param: {
+                    {{range $index, $column := .table.Columns}}{{if eq $column.IsQuery "1"}}
+                                      {{if or (eq $column.GoType "int64") (eq $column.GoType "int")}}
+                                                         {{$column.HtmlField}}: 0,
+                                                         {{else}}
+                                                         {{$column.HtmlField}}: '',{{end}}
+                                      {{end}}{{end}}
+					pageNum: 1,
+					pageSize: 10,
+				},
+			},
+		});
+		// 初始化表格数据
+		const initTableData = () => {
+			queryList()
+		};
+        const queryList = ()=>{
+                 state.tableData.loading = true
+                 getList(state.tableData.param).then(res=>{
+                 state.tableData.data = res.data.list ?? [];
+                 state.tableData.total = res.data.total;
+                 state.tableData.loading = false;
+            }).catch(e => {
+                state.tableData.data = [];
+                state.tableData.loading = false;
+            })
+        };
+		// 打开新增弹窗
+		const handlerAdd = () => {
+        editRef.value.openDialog();
+		};
+		// 打开修改弹窗
+		const handlerEdit = (row: Object) => {
+			editRef.value.openDialog(toRaw(row));
+		};
+		// 删除
+		const handlerDel = (row: any) => {
+      let msg = '你确定要删除所选的数据？';
+      let ids:number[] = [] ;
+      if(row){
+        ids = [row.id]
+      }else{
+        ids = state.ids
+      }
+      if(ids.length===0){
+        ElMessage.error('请选择要删除的数据。');
+        return
+      }
+			ElMessageBox.confirm(msg, '提示', {
+				confirmButtonText: '确认',
+				cancelButtonText: '取消',
+				type: 'warning',
+			})
+				.then(() => {
+          delete{{.table.ClassName}}(ids).then(()=>{
+            ElMessage.success('删除成功');
+            queryList();
+          })
+				})
+				.catch(() => {});
+		};
+		// 分页改变
+		const onHandleSizeChange = (val: number) => {
+			state.tableData.param.pageSize = val;
+		};
+		// 分页改变
+		const onHandleCurrentChange = (val: number) => {
+			state.tableData.param.pageNum = val;
+		};
+		// 页面加载时
+		onMounted(() => {
+			initTableData();
+		});
+    // 多选框选中数据
+    const handleSelectionChange = (selection:Array<TableData>)=> {
+      state.ids = selection.map(item => item.id)
+    };
+    /** 重置按钮操作 */
+    const resetQuery = (formEl: FormInstance | undefined) => {
+      if (!formEl) return
+      formEl.resetFields()
+      queryList()
+    };
+		return {
+      queryRef,
+			editRef,
+      handlerAdd,
+      handlerEdit,
+      handlerDel,
+			onHandleSizeChange,
+			onHandleCurrentChange,
+      queryList,
+      handleSelectionChange,
+      resetQuery,
+			...toRefs(state),
+		};
+	},
+});
+</script>
