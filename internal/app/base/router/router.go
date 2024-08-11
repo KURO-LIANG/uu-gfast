@@ -13,6 +13,7 @@ func BindController(group *ghttp.RouterGroup) {
 		// 不想要登录的路由
 		//行政区域
 		group.Bind(baseController.Region)
+
 		// 登录鉴权中间件，下方的路由都会鉴权
 		err := service.GfToken().Middleware(group)
 		if err != nil {

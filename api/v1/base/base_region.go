@@ -15,19 +15,19 @@ import (
 // RegionSearchReq 查询列表
 type RegionSearchReq struct {
 	g.Meta           `path:"/region/list" tags:"行政区域省市区县管理" method:"get" summary:"查询列表"`
-	ParentId         uint   `json:"parentId"`         //父ID
-	RegionName       string `json:"regionName"`       //名称
-	MergerName       string `json:"mergerName"`       //全称
-	ShortName        string `json:"shortName"`        //简称
-	MergerShortName  string `json:"mergerShortName"`  //简称合并
-	Level            int    `json:"level"`            //层级，1是省份，2是城市，3是区县
-	CityCode         string `json:"cityCode"`         //城市代码
-	ZipCode          string `json:"zipCode"`          //邮编号码
-	FullPinyin       string `json:"fullPinyin"`       //全拼
-	SimplifiedPinyin string `json:"simplifiedPinyin"` //简拼
-	FirstChar        string `json:"firstChar"`        //第一个字
-	Longitude        string `json:"longitude"`        //纬度
-	Latitude         string `json:"latitude"`         //经度
+	ParentId         uint   `json:"parentId" description:"父ID"` //父ID
+	RegionName       string `json:"regionName"`                 //名称
+	MergerName       string `json:"mergerName"`                 //全称
+	ShortName        string `json:"shortName"`                  //简称
+	MergerShortName  string `json:"mergerShortName"`            //简称合并
+	Level            int    `json:"level"`                      //层级，1是省份，2是城市，3是区县
+	CityCode         string `json:"cityCode"`                   //城市代码
+	ZipCode          string `json:"zipCode"`                    //邮编号码
+	FullPinyin       string `json:"fullPinyin"`                 //全拼
+	SimplifiedPinyin string `json:"simplifiedPinyin"`           //简拼
+	FirstChar        string `json:"firstChar"`                  //第一个字
+	Longitude        string `json:"longitude"`                  //纬度
+	Latitude         string `json:"latitude"`                   //经度
 	commonApi.PageReq
 }
 

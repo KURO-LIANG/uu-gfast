@@ -101,7 +101,7 @@ casbin:
   policyFile: "./resource/casbin/rbac_policy.csv"
 
 
-# CLI.
+# CLI. 代码生成器配置
 gfcli:
   gen:
     dao:
@@ -121,10 +121,10 @@ gen:
   autoRemovePre: true   #是否自动删除表前缀
   tablePrefix: "table_,base_"   #表前缀
   templatePath: "./resource/template/vm"  #代码生成模板路径
-  backDirForWindows: "F:/Desktop/smart_home_test/projects/gen" #windows后端路径
-  frontDirForWindows: "F:/Desktop/smart_home_test/projects/gen" #windows前端路径
-  backDirForMac: "/Users/liangqing/Desktop/slowcom" #mac 后端路径
-  frontDirForMac: "/Users/liangqing/Desktop/slowcom" #mac 前端路径
+  backDirForWindows: "F:/Desktop/xxxx/projects/gen" #windows后端路径
+  frontDirForWindows: "F:/Desktop/xxxx/projects/gen" #windows前端路径
+  backDirForMac: "/Users/liangqing/Desktop/genCode" #mac 后端路径
+  frontDirForMac: "/Users/liangqing/Desktop/genCode" #mac 前端路径
 
 # 上传配置
 upload:
