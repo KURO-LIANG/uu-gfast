@@ -105,7 +105,7 @@ casbin:
 gfcli:
   gen:
     dao:
-      - link: "mysql:root:5149330@tcp(127.0.0.1:3360)/uu_gfast_db"
+      - link: "mysql:root:xxxx@tcp(127.0.0.1:3360)/uu_gfast_db"
         tables: "tools_gen_table,tools_gen_table_column"
         removePrefix: "base_"
         descriptionTag: true
@@ -115,7 +115,7 @@ gfcli:
 
 # 生成代码设置
 gen:
-  author: "liangqing"
+  author: "your name"
   moduleName: "base"
   packageName: "base"
   autoRemovePre: true   #是否自动删除表前缀
@@ -123,21 +123,26 @@ gen:
   templatePath: "./resource/template/vm"  #代码生成模板路径
   backDirForWindows: "F:/Desktop/xxxx/projects/gen" #windows后端路径
   frontDirForWindows: "F:/Desktop/xxxx/projects/gen" #windows前端路径
-  backDirForMac: "/Users/liangqing/Desktop/genCode" #mac 后端路径
-  frontDirForMac: "/Users/liangqing/Desktop/genCode" #mac 前端路径
+  backDirForMac: "/Users/xxx/Desktop/genCode" #mac 后端路径
+  frontDirForMac: "/Users/xxx/Desktop/genCode" #mac 前端路径
 
 # 上传配置
 upload:
   domain: "http://localhost:8201" #上传图片的域名，目前仅用于本地上传
   default: 3   # 默认0:上传至本地 1:腾讯云  2：阿里云 3：七牛云
   tencentCOS:
-    upPath: "/smart_community/"
-    rawUrl: "https://slowcoom.myqcloud.com"
+    upPath: "/xxx/"
+    rawUrl: "https://aaa.com"
     secretID: ""
     secretKey: ""
   qiniu:
-    rawUrl: "http://smart.qiniu.slowcom.cn"
-    accessKey: "m4HSivqb0vE3h0hhvHbCfIexFfaFXE2AEPwncEpr"
-    secretKey: "cyUCgPJqsQKWmWU6RaoN3Y05fA4ebOEHiUyIJ6cQ"
-    bucket: "slowcom-smart-community"
+    rawUrl: "http://aaa.cn"
+    accessKey: "aaa"
+    secretKey: "aaa"
+    bucket: "aaa"
+
+# 微信小程序配置
+wx:
+  miniAppId: "wx1a1a1a1a1a1a1a1a" # 小程序APPID
+  miniAppSecret: "123213212"      # 小程序秘钥
 

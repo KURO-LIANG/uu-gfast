@@ -1,6 +1,6 @@
 /*
 * @desc:字典类型
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/224/14 21:30
  */

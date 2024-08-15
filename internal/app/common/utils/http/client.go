@@ -11,7 +11,7 @@ type Client struct {
 }
 
 const (
-	USERAGENT       = "slowcom_agent"
+	USERAGENT       = "uu_agent"
 	TIMEOUT         = 30
 	CONNECT_TIMEOUT = 10
 )

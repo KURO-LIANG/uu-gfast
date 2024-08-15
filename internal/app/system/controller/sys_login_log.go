@@ -1,6 +1,6 @@
 /*
 * @desc:登录日志管理
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/224/24 22:14
  */

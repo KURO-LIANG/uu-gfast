@@ -21,6 +21,6 @@ func BindController(group *ghttp.RouterGroup) {
 		}
 
 		// 需要登录鉴权的业务路由
-
+		group.Bind(baseController.BaseUser)
 	})
 }

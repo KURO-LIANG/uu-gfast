@@ -1,6 +1,6 @@
 /*
 * @desc:系统后台操作日志
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO<clarence_liang@163.com>
 * @Date:   2023/8/229/21 16:10
  */

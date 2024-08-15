@@ -1,6 +1,6 @@
 /*
 * @desc:token功能
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/223/8 15:54
  */

@@ -1,6 +1,6 @@
 /*
 * @desc:用户在线状态
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO<clarence_liang@163.com>
 * @Date:   2023/1/10 15:08
  */

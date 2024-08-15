@@ -1,6 +1,6 @@
 /*
 * @desc:路由绑定
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/222/18 16:23
  */
@@ -15,6 +15,7 @@ import (
 	commonService "uu-gfast/internal/app/common/service"
 	genRouter "uu-gfast/internal/app/gen/router"
 	systemRouter "uu-gfast/internal/app/system/router"
+	wechatRouter "uu-gfast/internal/app/wechat/router"
 	"uu-gfast/library/libRouter"
 )
 
@@ -41,5 +42,16 @@ func (router *Router) BindController(ctx context.Context, group *ghttp.RouterGro
 		if err := libRouter.RouterAutoBind(ctx, router, group); err != nil {
 			panic(err)
 		}
+	})
+}
+
+// BindWechatController 绑定小程序接口路由
+func BindWechatController(group *ghttp.RouterGroup) {
+	group.Group("/api/v1/wechat", func(group *ghttp.RouterGroup) {
+		group.Middleware(ghttp.MiddlewareHandlerResponse)
+		//微信端路由
+		wechatRouter.BindController(group)
+		// 图片上传
+		commonRouter.BindUploadController(group)
 	})
 }

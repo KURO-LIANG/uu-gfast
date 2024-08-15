@@ -4,7 +4,7 @@
 // 生成路径: internal/app/system/dao/internal/sys_job.go
 // 生成人：gfast
 // desc:定时任务
-// company:深圳慢云智能科技有限公司
+// company:xxxx
 // ==========================================================================
 
 package internal

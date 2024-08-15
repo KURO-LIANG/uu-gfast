@@ -1,6 +1,6 @@
 /*
 * @desc:token options
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/223/8 16:02
  */
@@ -16,6 +16,8 @@ type TokenOptions struct {
 	ServerName string `json:"serverName"`
 	// 缓存key (每创建一个实例CacheKey必须不相同)
 	CacheKey string `json:"cacheKey"`
+	// 缓存key (每创建一个实例CacheUserKey必须不相同)
+	CacheUserKey string `json:"cacheUserKey"`
 	// 超时时间 默认10天（秒）
 	Timeout int64 `json:"timeout"`
 	// 缓存刷新时间 默认5天（秒）

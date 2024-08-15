@@ -1,6 +1,6 @@
 /*
 * @desc:验证码获取
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/223/2 17:45
  */

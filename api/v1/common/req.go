@@ -1,6 +1,6 @@
 /*
 * @desc:公共接口相关
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO<clarence_liang@163.com>
 * @Date:   2023/8/223/30 9:28
  */

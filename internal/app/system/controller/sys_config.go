@@ -1,6 +1,6 @@
 /*
 * @desc:系统参数配置
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/224/18 21:17
  */

@@ -1,6 +1,6 @@
 /*
 * @desc:工具
-* @company:深圳慢云智能科技有限公司
+* @company:xxxx
 * @Author: KURO
 * @Date:   2023/8/223/4 22:16
  */
@@ -22,8 +22,8 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"uu-gfast/internal/app/common/consts"
 	"strings"
+	"uu-gfast/internal/app/common/consts"
 )
 
 // EncryptPassword 密码加密
